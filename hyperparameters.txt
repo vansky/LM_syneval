@@ -4,10 +4,10 @@
 #######################################################
 
 # Main working directory
-workdir=/path/to/this/repo
-
+workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo workdir
 # Directory where the Pytorch word language model code lives (with modifications for the multitask LMs)
-lm_dir=$workdir/word-language-model
+lm_dir=$workdir/../neural-complexity/
 
 # Paths to LM & CCG data
 lm_data_dir=$workdir/data/lm_data

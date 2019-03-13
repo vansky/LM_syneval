@@ -4,7 +4,7 @@ import os
 import subprocess
 import operator
 import logging
-from progress.bar import Bar
+#from progress.bar import Bar
 from tester.TestWriter import TestWriter
 from template.TestCases import TestCase
 
@@ -12,13 +12,13 @@ logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(description="Parameters for testing a language model")
 
-parser.add_argument('--template_dir', type=str, default='../EMNLP2018/templates',
+parser.add_argument('--template_dir', type=str, default='EMNLP2018/templates',
                     help='Location of the template files')
 parser.add_argument('--output_file', type=str, default='all_test_sents.txt',
                     help='File to store all of the sentences that will be tested')
-parser.add_argument('--model', type=str, default='../models/model.pt',
+parser.add_argument('--model', type=str, default='models/model.pt',
                     help='The model to test')
-parser.add_argument('--lm_data', type=str, default='../models/model.bin',
+parser.add_argument('--lm_data', type=str, default='models/model.bin',
                     help='The model .bin file that accompanies the model (for faster loading)')
 parser.add_argument('--tests', type=str, default='all',
                     help='Which constructions to test (agrmt/npi/all)')
@@ -30,6 +30,8 @@ parser.add_argument('--ngram_order', type=int, default=5,
                     help='Order of the ngram model')
 parser.add_argument('--vocab', type=str, default='ngram_vocab.pkl',
                     help='File containing the ngram vocab')
+parser.add_argument('--test_script', type=str, default='example_scripts/test.sh',
+                    help='Location of the test script')
 
 args = parser.parse_args()
 
@@ -61,7 +63,7 @@ def test_LM():
             results = score_ngram()
     else:       
         logging.info("Testing RNN...")
-        os.system('../example_scripts/test.sh '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.output_file + ' > '+ 'rnn.output')
+        os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.output_file + ' > '+ 'rnn.output')
         results = score_rnn()
     with open(args.model_type+"_results.pickle", 'wb') as f:
         pickle.dump(results, f)
