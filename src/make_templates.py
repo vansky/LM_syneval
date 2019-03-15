@@ -1,6 +1,7 @@
 import random
 import pickle
 import sys
+import os
 
 from template.Terminals import NPITerminals, AgreementTerminals
 from template.Templates import NPITemplate, AgreementTemplate
@@ -181,7 +182,12 @@ def main():
         sys.exit(1)
         
     out_dir = sys.argv[1]
-        
+
+    try:  
+        os.mkdir(out_dir)
+    except OSError:  
+        print ("Creation of the directory %s failed" % out_dir)
+    
     for case in agrmt_test_cases:
         print("case:",case)
         sents = MakeTestCase(agrmt_template, case)
