@@ -8,7 +8,7 @@ from template.TestCases import TestCase
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser(description="Which kind of results to display")
+parser = argparse.ArgumentParser(description="Which results to display")
 
 parser.add_argument('--results_file', type=str, required=True,
                     help='Path to where the results for the LM are stored')
@@ -20,7 +20,7 @@ parser.add_argument('--tests', type=str, default='all',
                     help='Which constructions to test (agrmt/npi/all)')
 parser.add_argument('--anim', action='store_true', default=False,
                     help='Examine the effect of animacy on the results')
-parser.add_argument('--out_dir', type=str, default='../results',
+parser.add_argument('--out_dir', type=str, default='results',
                     help='Directory to store the results files')
 parser.add_argument('--mode', type=str, default='overall',
                     help='Level of detail to report (overall/condensed/full)')
@@ -35,13 +35,13 @@ if args.mode != 'overall' and args.mode != 'condensed' and args.mode != 'full':
     logging.info("ERROR: mode argument must be 'overall' or 'condensed' or 'full'")
     sys.exit(1)
 
-directory=args.out_dir+"/"+args.model_type+"/"+args.analysis
+directory = args.out_dir+"/"+args.model_type+"/"+args.analysis
 os.system("mkdir -p " + directory)
 if os.path.exists(os.path.join(directory, "case_accs.txt")):
     os.system("rm " + os.path.join(directory, "case_accs.txt"))
 if os.path.exists(os.path.join(directory, "individual_accs.txt")):
     os.system("rm " + os.path.join(directory, "individual_accs.txt"))
-    
+
 testcase = TestCase()
 if args.tests == 'agrmt':
     tests = testcase.agrmt_cases
@@ -53,7 +53,7 @@ else:
 results = pickle.load(open(args.results_file, 'rb'))
 
 if not args.anim:
-    ### JOIN ANIM + INANIM CASES ###
+    # JOIN ANIM + INANIM CASES #
     joined_results = {}
     for name in tests:
         if 'anim' in name:
@@ -71,13 +71,15 @@ if not args.anim:
 else:
     joined_results = results
 
+
 def is_more_probable(sent_a, sent_b):
     if len(sent_a) != len(sent_b) and args.unit_type == 'word':
-        logging.info("ERROR: Mismatch in sentence lengths: (1) ",sent_a, " vs (2) ",sent_b)
+        logging.info("ERROR: Mismatch in sentence lengths: (1) ", sent_a, " vs (2) ", sent_b)
     if args.analysis == 'word_only':
-        index = [sent_a[i][0]!=sent_b[i][0] for i in range(len(sent_a))].index(True)
+        index = [sent_a[i][0] != sent_b[i][0] for i in range(len(sent_a))].index(True)
         return sent_a[index][1] > sent_b[index][1]
     return sum([sent_a[i][1] for i in range(len(sent_a))]) > sum([sent_b[i][1] for i in range(len(sent_b))])
+
 
 def analyze_agrmt_results(results):
     correct_sents = {}
@@ -85,7 +87,7 @@ def analyze_agrmt_results(results):
     for case in results.keys():
         correct_sents[case] = []
         incorrect_sents[case] = []
-        for i in range(0,len(results[case]),2):
+        for i in range(0, len(results[case]), 2):
             grammatical = results[case][i]
             ungrammatical = results[case][i+1]
             if is_more_probable(grammatical, ungrammatical):
@@ -102,15 +104,16 @@ def analyze_agrmt_results(results):
                 incorrect_sents[case].append((grammatical, ungrammatical))
     return correct_sents, incorrect_sents
 
+
 def analyze_npi_results(results):
-    options = ['gi_g', 'gi_i','iu_i','iu_u','gu_g','gu_u']
+    options = ['gi_g', 'gi_i', 'iu_i', 'iu_u', 'gu_g', 'gu_u']
     sentences = {}
     for opt in options:
         sentences[opt] = {}
         for case in results.keys():
             sentences[opt][case] = []
     for case in results.keys():
-        for i in range(0,len(results[case]),3):
+        for i in range(0, len(results[case]), 3):
             grammatical = results[case][i]
             intrusive = results[case][i+1]
             ungrammatical = results[case][i+2]
@@ -136,6 +139,7 @@ def analyze_npi_results(results):
                 sentences['iu_u'][case].append((g_sent, i_sent, u_sent))
     return [sentences[x] for x in options]
 
+
 def display_agrmt_results(name, sents):
     # print case-by-case accuracies
     correct_sents, incorrect_sents = sents
@@ -150,12 +154,14 @@ def display_agrmt_results(name, sents):
                 for i in range(len(correct_sents[case][0][0])):
                     if correct_sents[case][0][0][i][0] == correct_sents[case][0][1][i][0]:
                         string += correct_sents[case][0][0][i][0] + " "
-                    else: string += correct_sents[case][0][0][i][0]+"/*"+correct_sents[case][0][1][i][0]+" "
+                    else:
+                        string += correct_sents[case][0][0][i][0]+"/*"+correct_sents[case][0][1][i][0]+" "
             else:
                 for i in range(len(incorrect_sents[case][0][0])):
                     if incorrect_sents[case][0][0][i][0] == incorrect_sents[case][0][1][i][0]:
                         string += incorrect_sents[case][0][0][i][0] + " "
-                    else: string += incorrect_sents[case][0][0][i][0]+"/*"+incorrect_sents[case][0][1][i][0]+" "
+                    else:
+                        string += incorrect_sents[case][0][0][i][0]+"/*"+incorrect_sents[case][0][1][i][0]+" "
             strings[case] = string[:-1]
             case_accs[case] = float(len(correct_sents[case]))/(len(correct_sents[case])+len(incorrect_sents[case]))
         overall_correct += len(correct_sents[case])
@@ -164,9 +170,9 @@ def display_agrmt_results(name, sents):
     if args.mode != 'overall':
         case_out = open(directory+"/case_accs.txt", 'a')
         case_out.write("\n##########\n" + name + "\n##########\n"+"Overall acc: "+str(float(overall_correct)/total)+"\n")
-        for (case,score) in sorted(case_accs.items(), key=operator.itemgetter(1)):
+        for (case, score) in sorted(case_accs.items(), key=operator.itemgetter(1)):
             case_out.write(str(case)+":\n")
-            case_out.write(strings[case]+": "+str(round(score,4))+"\n")
+            case_out.write(strings[case]+": "+str(round(score, 4))+"\n")
         case_out.write("\n")
         case_out.close()
     # print individual scores
@@ -179,12 +185,12 @@ def display_agrmt_results(name, sents):
             fout.write(case+":\n")
             for good, bad in incorrect_sents[case]:
                 if count < 5:
-                    fout.write("Grammatical:"+str(round(sum([x[1] for x in good]),2))+"\n")
+                    fout.write("Grammatical:"+str(round(sum([x[1] for x in good]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in good])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in good])+"\n")
-                    fout.write("Ungrammatical:"+str(round(sum([x[1] for x in bad]),2))+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in good])+"\n")
+                    fout.write("Ungrammatical:"+str(round(sum([x[1] for x in bad]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in bad])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in bad])+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in bad])+"\n")
                     count += 1
                 else:
                     break
@@ -192,11 +198,12 @@ def display_agrmt_results(name, sents):
         fout.close()
     return float(overall_correct)/total
 
+
 def display_npi_results(name, sents):
     gi_grammatical_sents, gi_intrusive_sents, iu_intrusive_sents, iu_ungrammatical_sents, gu_grammatical_sents, gu_ungrammatical_sents = sents
     overall_gi = 0.
     overall_iu = 0.
-    overall_gu= 0.
+    overall_gu = 0.
     total_gi = 0.
     total_iu = 0.
     total_gu = 0.
@@ -232,15 +239,15 @@ def display_npi_results(name, sents):
         case_out.write("OVERALL P(GRAMMATICAL) > P(INTRUSIVE): "+str(float(overall_gi)/total_gi)+"\n")
         case_out.write("OVERALL P(INTRUSIVE) > P(UNGRAMMATICAL): "+str(float(overall_iu)/total_iu)+"\n")
         case_out.write("OVERALL P(GRAMMATICAL) > P(UNGRAMMATICAL): "+str(float(overall_gu)/total_gu)+"\n")
-        for (case,score) in sorted(gi_case_accs.items(), key=operator.itemgetter(1)):
+        for (case, score) in sorted(gi_case_accs.items(), key=operator.itemgetter(1)):
             case_out.write(str(case)+":\n")
             case_out.write(strings[case]+":\n")
-            case_out.write("Grammatical > intrusive: "+str(round(score,4))+"\n")
-            case_out.write("Grammatical > ungrammatical: "+str(gu_case_accs[case])+"\n")
-            case_out.write("Intrusive > ungrammatical: "+str(iu_case_accs[case])+"\n")
+            case_out.write("Grammatical > intrusive: " + str(round(score, 4)) + "\n")
+            case_out.write("Grammatical > ungrammatical: " + str(gu_case_accs[case]) + "\n")
+            case_out.write("Intrusive > ungrammatical: " + str(iu_case_accs[case]) + "\n")
         case_out.write("\n")
         case_out.close()
-    
+
     # print individual scores
     if args.mode == "full":
         fout = open(directory+"/individual_accs.txt", 'a')
@@ -249,14 +256,14 @@ def display_npi_results(name, sents):
         for case in gi_intrusive_sents.keys():
             count = 0
             fout.write(case+":\n")
-            for c,i,u in gi_intrusive_sents[case]:
+            for c, i, u in gi_intrusive_sents[case]:
                 if count < 5:
-                    fout.write("grammatical:"+str(round(sum([x[1] for x in c]),2))+"\n")
+                    fout.write("grammatical:"+str(round(sum([x[1] for x in c]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in c])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in c])+"\n")
-                    fout.write("intrusive:"+str(round(sum([x[1] for x in i]),2))+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in c])+"\n")
+                    fout.write("intrusive:"+str(round(sum([x[1] for x in i]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in i])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in i])+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in i])+"\n")
                     count += 1
                 else:
                     break
@@ -264,14 +271,14 @@ def display_npi_results(name, sents):
         for case in iu_ungrammatical_sents.keys():
             count = 0
             fout.write(case+":\n")
-            for c,i,u in iu_ungrammatical_sents[case]:
+            for c, i, u in iu_ungrammatical_sents[case]:
                 if count < 5:
-                    fout.write("intrusive:"+str(round(sum([x[1] for x in i]),2))+"\n")
+                    fout.write("intrusive:"+str(round(sum([x[1] for x in i]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in i])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in i])+"\n")
-                    fout.write("ungrammatical:"+str(round(sum([x[1] for x in u]),2))+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in i])+"\n")
+                    fout.write("ungrammatical:"+str(round(sum([x[1] for x in u]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in u])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in u])+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in u])+"\n")
                     count += 1
                 else:
                     break
@@ -279,14 +286,14 @@ def display_npi_results(name, sents):
         for case in gu_ungrammatical_sents.keys():
             count = 0
             fout.write(case+":\n")
-            for c,i,u in gu_ungrammatical_sents[case]:
+            for c, i, u in gu_ungrammatical_sents[case]:
                 if count < 5:
-                    fout.write("grammatical:"+str(round(sum([x[1] for x in c]),2))+"\n")
+                    fout.write("grammatical:"+str(round(sum([x[1] for x in c]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in c])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in c])+"\n")
-                    fout.write("ungrammatical:"+str(round(sum([x[1] for x in u]),2))+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in c])+"\n")
+                    fout.write("ungrammatical:"+str(round(sum([x[1] for x in u]), 2))+"\n")
                     fout.write('\t'.join([x[0] for x in u])+"\n")
-                    fout.write('\t'.join([str(round(x[1],2)) for x in u])+"\n")
+                    fout.write('\t'.join([str(round(x[1], 2)) for x in u])+"\n")
                     count += 1
                 else:
                     break
@@ -296,19 +303,17 @@ def display_npi_results(name, sents):
 
 
 # save overall results to file
-directory=args.out_dir+"/"+args.model_type+"/"+args.analysis
+directory = args.out_dir+"/"+args.model_type+"/"+args.analysis
 os.system("mkdir -p " + directory)
 with open(directory+"/overall_accs.txt", 'w') as f:
     for name in joined_results.keys():
         if "npi" in name:
-            #f.write("############\n"+name+" - NPI:\n############\n")
             sents = analyze_npi_results(joined_results[name])
             overall_gi, overall_iu, overall_gu = display_npi_results(name, sents)
             f.write(name+"(grammatical vs. intrusive): "+str(overall_gi)+"\n")
             f.write(name+"(intrusive vs. ungrammatical): "+str(overall_iu)+"\n")
             f.write(name+"(grammatical vs. ungrammatical): "+str(overall_gu)+"\n")
         else:
-            #f.write("############\n"+name+" - SUBJECT/VERB:\n############\n")
             sents = analyze_agrmt_results(joined_results[name])
             overall = display_agrmt_results(name, sents)
             f.write(name+": "+str(overall)+"\n")

@@ -6,7 +6,8 @@ import os
 from template.Terminals import NPITerminals, AgreementTerminals
 from template.Templates import NPITemplate, AgreementTemplate
 from template.TestCases import TestCase
-                          
+
+
 class MakeAgreementTemplate():
     def __init__(self):
         self.terminals = AgreementTerminals().terminals
@@ -38,14 +39,13 @@ class MakeAgreementTemplate():
             for j in range(len(vary)):
                 sent += preterms[vary[j]]+"_"
         return sent[:-1]
-        
 
     def switch_numbers(self, base_sent, variables, preterms):
         new_sent = base_sent[:]
         for idx in variables:
             new_sent[idx] = self.switch_number(new_sent[idx], preterms[idx][-1] == "V")
         return new_sent
-    
+
     def make_variable_sents(self, preterms, match, vary):
         all_sents = {}
         base_sent = [self.terminals[p] for p in preterms]
@@ -56,18 +56,19 @@ class MakeAgreementTemplate():
 
             s_ungrammatical = self.switch_numbers(s_grammatical, match[1], preterms)
             p_ungrammatical = self.switch_numbers(p_grammatical, match[1], preterms)
-            
+
             if i == 1:
                 s_ungrammatical = self.switch_numbers(s_grammatical, match[0], preterms)
                 p_ungrammatical = self.switch_numbers(p_grammatical, match[0], preterms)
-                
+
                 s_grammatical = self.switch_numbers(s_grammatical, match[0]+match[1], preterms)
                 p_grammatical = self.switch_numbers(p_grammatical, match[0]+match[1], preterms)
             all_sents[self.get_case_name(preterms, match, vary, opt=prefixes[i], v_opt='sing')] = [s_grammatical, s_ungrammatical]
             if len(vary) > 0:
                 all_sents[self.get_case_name(preterms, match, vary, opt=prefixes[i], v_opt='plur')] = [p_grammatical, p_ungrammatical]
-            
+
         return all_sents
+
 
 class MakeNPITemplate():
     def __init__(self):
@@ -93,7 +94,6 @@ class MakeNPITemplate():
 
     def make_variable_sents(self, preterms, simple=False):
         all_sents = {}
-        prefixes = ['past', 'future']
         p_grammatical = [self.terminals[p] for p in preterms]
         f_grammatical = [self.terminals[p] for p in self.switch_tense(preterms)]
 
@@ -110,11 +110,12 @@ class MakeNPITemplate():
 
 
 class MakeTestCase():
-    def __init__(self, template, test_case):
+    def __init__(self, template, test_case, max_number=None):
         self.template = template
         self.test_case = test_case
+        self.max_number = max_number
         self.sent_templates = self.get_rules()
-        
+
     def get_rules(self):
         sent_templates = {}
         preterminals, templates = self.template.rules[self.test_case]
@@ -125,20 +126,26 @@ class MakeTestCase():
                     sent_templates[k] = []
                 gram = list(self.expand_sent(sents[k][0]))
                 ungram = list(self.expand_sent(sents[k][1]))
-                for i in range(len(gram)):
-                    sent_templates[k].append((gram[i],ungram[i]))
+                saved_indices = list(range(len(gram)))
+                random.shuffle(saved_indices)
+                if self.max_number:
+                    saved_indices=saved_indices[:self.max_number]
+                for i in saved_indices:
+                    sent_templates[k].append((gram[i], ungram[i]))
         else:
             sents = self.template.make_variable_sents(preterminals, simple=self.test_case.startswith('simple'))
             for k in sents.keys():
                 if k not in sent_templates:
                     sent_templates[k] = []
                 gram = list(self.expand_sent(sents[k][0]))
-                intrusive = list(self.expand_sent(sents[k][1], partial= "", switch_ds=not self.test_case.startswith('simple')))
+                intrusive = list(self.expand_sent(sents[k][1],
+                                                  partial="",
+                                                  switch_ds=not self.test_case.startswith('simple')))
                 ungram = list(self.expand_sent(sents[k][2]))
                 for i in range(len(gram)):
-                    sent_templates[k].append((gram[i],intrusive[i],ungram[i]))
+                    sent_templates[k].append((gram[i], intrusive[i], ungram[i]))
         return sent_templates
-    
+
     def expand_sent(self, sent, partial="", switch_ds=False):
         if len(sent) == 1:
             for wrd in sent[0]:
@@ -150,7 +157,6 @@ class MakeTestCase():
                     new_partial_two = ' '.join([x for x in partial.split()[4:]])
                     yield ' '.join([the, new_partial_one, no, new_partial_two, wrd])
 
-                
                 # We want to avoid repeating words/phrases multiple times in the sentences
                 # but some words are allowed to repeat, such as determiners or complementizers
                 # We also need to check that the phrase isn't repeated save for number
@@ -173,14 +179,14 @@ def main():
     npi_template = MakeNPITemplate()
 
     testcase = TestCase()
-    
+
     agrmt_test_cases = testcase.agrmt_cases
     npi_test_cases = testcase.npi_cases
-    
+
     if len(sys.argv) != 2:
         print("Usage: python make_templates.py [template_dir]")
         sys.exit(1)
-        
+
     out_dir = sys.argv[1]
 
     try:  
@@ -188,17 +194,19 @@ def main():
     except OSError:  
         print ("Creation of the directory %s failed" % out_dir)
     
+    max_number = 100
+
     for case in agrmt_test_cases:
-        print("case:",case)
-        sents = MakeTestCase(agrmt_template, case)
+        print("case:", case)
+        sents = MakeTestCase(agrmt_template, case, max_number)
         with open(out_dir+"/"+case+".pickle", 'wb') as f:
             pickle.dump(sents.sent_templates, f)
     for case in npi_test_cases:
-        print("case:",case)
-        sents = MakeTestCase(npi_template, case)
+        print("case:", case)
+        sents = MakeTestCase(npi_template, case, max_number)
         with open(out_dir+"/"+case+".pickle", 'wb') as f:
             pickle.dump(sents.sent_templates, f)
-            
-            
+
+
 if __name__ == "__main__":
     main()
