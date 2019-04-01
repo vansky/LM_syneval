@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description="Parameters for testing a language 
 
 parser.add_argument('--template_dir', type=str, default='EMNLP2018/templates',
                     help='Location of the template files')
-parser.add_argument('--output_file', type=str, default='all_test_sents.txt',
+parser.add_argument('--sentence_file', type=str, default='all_test_sents.txt',
                     help='File to store all of the sentences that will be tested')
 parser.add_argument('--model', type=str, default='models/model.pt',
                     help='The model to test')
@@ -32,10 +32,15 @@ parser.add_argument('--vocab', type=str, default='ngram_vocab.pkl',
                     help='File containing the ngram vocab')
 parser.add_argument('--test_script', type=str, default='example_scripts/test.sh',
                     help='Location of the test script')
+parser.add_argument('--output_file', type=str, default=None,
+                    help='Name of the output file (default: model name)')
 
 args = parser.parse_args()
 
-writer = TestWriter(args.template_dir, args.output_file)
+if args.output_file == None:
+    args.output_file = '.'.join(args.model.split('/')[-1].split('.')[:-1])+'.output'
+
+writer = TestWriter(args.template_dir, args.sentence_file)
 testcase = TestCase()
 if args.tests == 'agrmt':
     tests = testcase.agrmt_cases
@@ -56,16 +61,16 @@ key_lengths = writer.key_lengths
 def test_LM():
     if args.model_type.lower() == "ngram":
         logging.info("Testing ngram...")
-        os.system('ngram -order ' + str(args.ngram_order) + ' -lm ' + args.model + ' -vocab ' + args.vocab + ' -ppl ' + args.template_dir+'/'+args.output_file + ' -debug 2 > ngram.output')
+        os.system('ngram -order ' + str(args.ngram_order) + ' -lm ' + args.model + ' -vocab ' + args.vocab + ' -ppl ' + args.template_dir+'/'+args.sentence_file + ' -debug 2 > '+args.output_file)
         if args.ngram_order == 1:
             results = score_unigram()
         else:
             results = score_ngram()
     else:       
         logging.info("Testing RNN...")
-        os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.output_file + ' > '+ 'rnn.output')
+        os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + ' > '+ args.output_file)
         results = score_rnn()
-    with open(args.model_type+"_results.pickle", 'wb') as f:
+    with open('.'.join(args.output_file.split('.')[:-1]) + "_results.pickle", 'wb') as f:
         pickle.dump(results, f)
 
 def score_unigram():
@@ -126,7 +131,7 @@ def score_ngram():
 
 def score_rnn():
     logging.info("Scoring RNN...")
-    with open('rnn.output', 'r') as f:
+    with open(args.output_file, 'r') as f:
         all_scores = {}
         first = False
         score = 0.

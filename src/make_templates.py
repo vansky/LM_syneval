@@ -194,7 +194,7 @@ def main():
     except OSError:  
         print ("Creation of the directory %s failed" % out_dir)
     
-    max_number = 100
+    max_number = 2
 
     for case in agrmt_test_cases:
         print("case:", case)
