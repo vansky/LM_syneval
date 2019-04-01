@@ -141,7 +141,7 @@ def score_rnn():
         first = False
         score = 0.
         sent = []
-        prev_sentid = str(-2)
+        prev_sentid = str(-1)
         for line in f:
             if not first:
                 first = True
@@ -166,7 +166,7 @@ def score_rnn():
                                         all_scores[k1][k2] = []
                                     all_scores[k1][k2].append(sent)
                     sent = []
-                    if float(sentid) != float(prev_sentid)+2:
+                    if float(sentid) != float(prev_sentid)+1:
                         logging.info("Error at sents "+sentid+" and "+prev_sentid)
                     prev_sentid = sentid
     return all_scores

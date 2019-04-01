@@ -28,7 +28,7 @@ class TestWriter():
                         for i in range(len(sent)):
                             if unit_type != 'word':
                                 chars = [x if x != ' ' else '/s' for x in sent[i]+' ']
-                                f.write(' '.join(chars)+' . /s <eos>\n')
+                                f.write(' '.join(chars)+' . /s \n')
                             else:
-                                f.write(sent[i] + " . <eos>\n")
+                                f.write(sent[i] + " . \n")
                     self.name_lengths[name] = name_length
