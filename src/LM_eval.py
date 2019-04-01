@@ -117,7 +117,7 @@ def score_ngram():
                             all_scores[k1] = {}
                         key_found = False
                         for (k2,v2) in sorted(key_lengths[k1].items(), key=operator.itemgetter(1)):
-                            if i <  v2 and not key_found:
+                            if i < v2 and not key_found:
                                 key_found = True
                                 if k2 not in all_scores[k1]:
                                     all_scores[k1][k2] = []
@@ -154,17 +154,17 @@ def score_rnn():
                 if wrd == ".":
                     name_found = False
                     for (k1,v1) in sorted(name_lengths.items(), key=operator.itemgetter(1)):
-                        if float(sentid) < v1 and not name_found:
-                            name_found = True
+                        if float(sentid) < v1:
                             if k1 not in all_scores:
                                 all_scores[k1] = {}
                             key_found = False
                             for (k2,v2) in sorted(key_lengths[k1].items(), key=operator.itemgetter(1)):
-                                if int(sentid) < v2 and not key_found:
-                                    key_found = True
+                                if int(sentid) < v2:
                                     if k2 not in all_scores[k1]:
                                         all_scores[k1][k2] = []
                                     all_scores[k1][k2].append(sent)
+                                    break
+                            break
                     sent = []
                     if float(sentid) != float(prev_sentid)+1:
                         logging.info("Error at sents "+sentid+" and "+prev_sentid)

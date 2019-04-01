@@ -8,7 +8,7 @@ class TestWriter():
         self.key_lengths = {}
         self.template_dir = template_dir
         self.out_file = os.path.join(self.template_dir, sent_file)
-        
+
 
     def write_tests(self, all_sents, unit_type):
         logging.info("Writing tests...")
