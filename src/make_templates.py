@@ -142,8 +142,14 @@ class MakeTestCase():
                                                   partial="",
                                                   switch_ds=not self.test_case.startswith('simple')))
                 ungram = list(self.expand_sent(sents[k][2]))
-                for i in range(len(gram)):
+                saved_indices = list(range(len(gram)))
+                random.shuffle(saved_indices)
+                if self.max_number:
+                    saved_indices=saved_indices[:self.max_number]
+                for i in saved_indices:
                     sent_templates[k].append((gram[i], intrusive[i], ungram[i]))
+                #for i in range(len(gram)):
+                #    sent_templates[k].append((gram[i], intrusive[i], ungram[i]))
         return sent_templates
 
     def expand_sent(self, sent, partial="", switch_ds=False):

@@ -34,6 +34,8 @@ parser.add_argument('--test_script', type=str, default='example_scripts/test.sh'
                     help='Location of the test script')
 parser.add_argument('--output_file', type=str, default=None,
                     help='Name of the output file (default: model name)')
+parser.add_argument('--cuda', action='store_true',
+                    help='use CUDA')
 
 args = parser.parse_args()
 
@@ -68,7 +70,10 @@ def test_LM():
             results = score_ngram()
     else:       
         logging.info("Testing RNN...")
-        os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + ' > '+ args.output_file)
+        if args.cuda:
+            os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + '--cuda > '+ args.output_file)
+        else:
+            os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + ' > '+ args.output_file)
         results = score_rnn()
     with open('.'.join(args.output_file.split('.')[:-1]) + "_results.pickle", 'wb') as f:
         pickle.dump(results, f)
@@ -136,14 +141,13 @@ def score_rnn():
         first = False
         score = 0.
         sent = []
-        prev_sentid = -1
+        prev_sentid = str(-2)
         for line in f:
-            if line.strip() == "":
+            if not first:
                 first = True
             elif "===========================" in line:
-                first = False
                 break
-            elif first and len(line.strip().split()) == 6 and "torch.cuda" not in line:
+            else:
                 wrd, sentid, wrd_score = [line.strip().split()[i] for i in [0,1,4]]
                 score = -1 * float(wrd_score) # multiply by -1 to turn surps back into logprobs
                 sent.append((wrd, score))
@@ -156,15 +160,15 @@ def score_rnn():
                                 all_scores[k1] = {}
                             key_found = False
                             for (k2,v2) in sorted(key_lengths[k1].items(), key=operator.itemgetter(1)):
-                                if int(sentid) <  v2 and not key_found:
+                                if int(sentid) < v2 and not key_found:
                                     key_found = True
                                     if k2 not in all_scores[k1]:
                                         all_scores[k1][k2] = []
                                     all_scores[k1][k2].append(sent)
                     sent = []
-                    if float(sentid) != prev_sentid+1:
+                    if float(sentid) != float(prev_sentid)+2:
                         logging.info("Error at sents "+sentid+" and "+prev_sentid)
-                    prev_sentid = float(sentid)
+                    prev_sentid = sentid
     return all_scores
 
 def clean_files(mode):
@@ -172,6 +176,5 @@ def clean_files(mode):
         os.system('rm ngram.output unigram.output')
     else:
         os.system('rm rnn.output')
-
 
 test_LM()
