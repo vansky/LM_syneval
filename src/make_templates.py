@@ -110,10 +110,9 @@ class MakeNPITemplate():
 
 
 class MakeTestCase():
-    def __init__(self, template, test_case, max_number=None):
+    def __init__(self, template, test_case):
         self.template = template
         self.test_case = test_case
-        self.max_number = max_number
         self.sent_templates = self.get_rules()
 
     def get_rules(self):
@@ -127,9 +126,6 @@ class MakeTestCase():
                 gram = list(self.expand_sent(sents[k][0]))
                 ungram = list(self.expand_sent(sents[k][1]))
                 saved_indices = list(range(len(gram)))
-                random.shuffle(saved_indices)
-                if self.max_number:
-                    saved_indices=saved_indices[:self.max_number]
                 for i in saved_indices:
                     sent_templates[k].append((gram[i], ungram[i]))
         else:
@@ -143,13 +139,8 @@ class MakeTestCase():
                                                   switch_ds=not self.test_case.startswith('simple')))
                 ungram = list(self.expand_sent(sents[k][2]))
                 saved_indices = list(range(len(gram)))
-                random.shuffle(saved_indices)
-                if self.max_number:
-                    saved_indices=saved_indices[:self.max_number]
                 for i in saved_indices:
                     sent_templates[k].append((gram[i], intrusive[i], ungram[i]))
-                #for i in range(len(gram)):
-                #    sent_templates[k].append((gram[i], intrusive[i], ungram[i]))
         return sent_templates
 
     def expand_sent(self, sent, partial="", switch_ds=False):
@@ -200,16 +191,14 @@ def main():
     except OSError:  
         print ("Creation of the directory %s failed" % out_dir)
     
-    max_number = 2
-
     for case in agrmt_test_cases:
         print("case:", case)
-        sents = MakeTestCase(agrmt_template, case, max_number)
+        sents = MakeTestCase(agrmt_template, case)
         with open(out_dir+"/"+case+".pickle", 'wb') as f:
             pickle.dump(sents.sent_templates, f)
     for case in npi_test_cases:
         print("case:", case)
-        sents = MakeTestCase(npi_template, case, max_number)
+        sents = MakeTestCase(npi_template, case)
         with open(out_dir+"/"+case+".pickle", 'wb') as f:
             pickle.dump(sents.sent_templates, f)
 

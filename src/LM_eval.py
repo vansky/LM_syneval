@@ -36,13 +36,15 @@ parser.add_argument('--output_file', type=str, default=None,
                     help='Name of the output file (default: model name)')
 parser.add_argument('--cuda', action='store_true',
                     help='use CUDA')
+parser.add_argument('--max_num', type=int, default=None,
+                    help='Maximum number of test sentences per class')
 
 args = parser.parse_args()
 
 if args.output_file == None:
     args.output_file = '.'.join(args.model.split('/')[-1].split('.')[:-1])+'.output'
 
-writer = TestWriter(args.template_dir, args.sentence_file)
+writer = TestWriter(args.template_dir, args.sentence_file, args.max_num)
 testcase = TestCase()
 if args.tests == 'agrmt':
     tests = testcase.agrmt_cases

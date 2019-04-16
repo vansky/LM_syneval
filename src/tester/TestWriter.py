@@ -1,14 +1,15 @@
 import logging
+import random
 import os
 logging.basicConfig(level=logging.INFO)
 
 class TestWriter():
-    def __init__(self, template_dir, sent_file):
+    def __init__(self, template_dir, sent_file, max_num=None):
         self.name_lengths = {}
         self.key_lengths = {}
         self.template_dir = template_dir
         self.out_file = os.path.join(self.template_dir, sent_file)
-
+        self.max_num = max_num
 
     def write_tests(self, all_sents, unit_type):
         logging.info("Writing tests...")
@@ -24,7 +25,11 @@ class TestWriter():
                     key_length += multiplier * len(all_sents[name][key])
                     self.key_lengths[name][key] = key_length
                     name_length += multiplier * len(all_sents[name][key])
-                    for sent in all_sents[name][key]:
+                    sents = all_sents[name][key]
+                    if self.max_num:
+                        random.shuffle(sents)
+                        sents = sents[:self.max_num]
+                    for sent in sents:
                         for i in range(len(sent)):
                             if unit_type != 'word':
                                 chars = [x if x != ' ' else '/s' for x in sent[i]+' ']
