@@ -4,7 +4,6 @@ import os
 import subprocess
 import operator
 import logging
-#from progress.bar import Bar
 from tester.TestWriter import TestWriter
 from template.TestCases import TestCase
 
@@ -58,7 +57,12 @@ for test_name in tests:
     test_sents = pickle.load(open(args.template_dir+"/"+test_name+".pickle", 'rb'))
     all_test_sents[test_name] = test_sents
 
-writer.write_tests(all_test_sents, args.unit_type)
+if os.path.isfile(writer.out_file):
+    # Read tests
+    writer.read_tests()
+else:
+    # Write tests
+    writer.write_tests(all_test_sents, args.unit_type)
 name_lengths = writer.name_lengths
 key_lengths = writer.key_lengths
 

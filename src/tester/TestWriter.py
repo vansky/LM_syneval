@@ -1,4 +1,5 @@
 import logging
+import pickle
 import random
 import os
 logging.basicConfig(level=logging.INFO)
@@ -22,13 +23,13 @@ class TestWriter():
                 else: multiplier=2
                 self.key_lengths[name] = {}
                 for key in all_sents[name].keys():
-                    key_length += multiplier * len(all_sents[name][key])
-                    self.key_lengths[name][key] = key_length
-                    name_length += multiplier * len(all_sents[name][key])
                     sents = all_sents[name][key]
                     if self.max_num:
                         random.shuffle(sents)
                         sents = sents[:self.max_num]
+                    key_length += multiplier * len(sents)
+                    self.key_lengths[name][key] = key_length
+                    name_length += multiplier * len(sents)
                     for sent in sents:
                         for i in range(len(sent)):
                             if unit_type != 'word':
@@ -37,3 +38,11 @@ class TestWriter():
                             else:
                                 f.write(sent[i] + " . \n")
                     self.name_lengths[name] = name_length
+        pickle.dump((self.key_lengths,self.name_lengths),\
+                    open(os.path.join(self.template_dir,'writer_data.pkl'),'wb'))
+
+    def read_tests(self):
+        logging.info("Reading tests...")
+        self.key_lengths,self.name_lengths =\
+            pickle.load(open(os.path.join(self.template_dir,'writer_data.pkl'),'rb'))
+
