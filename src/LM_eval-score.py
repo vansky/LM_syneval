@@ -17,7 +17,9 @@ parser.add_argument('--sentence_file', type=str, default='all_test_sents.txt',
                     help='File to store all of the sentences that will be tested')
 parser.add_argument('--output_file', type=str, required=True,
                     help='Name of the output file (default: model name)')
-
+parser.add_argument('--model_type', type=str, default='rnn',
+                    choices=['rnn', 'tf'],
+                    help='type of model to eval')
 args = parser.parse_args()
 
 #if args.output_file == None:
@@ -31,12 +33,16 @@ writer.read_tests()
 name_lengths = writer.name_lengths
 key_lengths = writer.key_lengths
 
+if args.model_type == 'rnn':
+    scoring_indices = [0,1,4]
+elif args.model_type == 'tf':
+    scoring_indices = [0,1,2]
+
 def test_LM():
     logging.info("Testing Model Output...")
     results = score_rnn()
     with open('.'.join(args.output_file.split('.')[:-1]) + "_results.pickle", 'wb') as f:
         pickle.dump(results, f)
-
 
 def score_rnn():
     logging.info("Scoring Model Output...")
@@ -52,7 +58,7 @@ def score_rnn():
             elif "===========================" in line:
                 break
             else:
-                wrd, sentid, wrd_score = [line.strip().split()[i] for i in [0,1,4]]
+                wrd, sentid, wrd_score = [line.strip().split()[i] for i in scoring-indices]
                 score = -1 * float(wrd_score) # multiply by -1 to turn surps back into logprobs
                 sent.append((wrd, score))
                 if wrd == ".":

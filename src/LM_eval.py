@@ -44,25 +44,26 @@ if args.output_file == None:
     args.output_file = '.'.join(args.model.split('/')[-1].split('.')[:-1])+'.output'
 
 writer = TestWriter(args.template_dir, args.sentence_file, args.max_num)
-testcase = TestCase()
-if args.tests == 'agrmt':
-    tests = testcase.agrmt_cases
-elif args.tests == 'npi':
-    tests = testcase.npi_cases
-else:
-    tests = testcase.all_cases
-
-all_test_sents = {}
-for test_name in tests:
-    test_sents = pickle.load(open(args.template_dir+"/"+test_name+".pickle", 'rb'))
-    all_test_sents[test_name] = test_sents
 
 if os.path.isfile(writer.out_file):
     # Read tests
     writer.read_tests()
 else:
     # Write tests
+    testcase = TestCase()
+    if args.tests == 'agrmt':
+        tests = testcase.agrmt_cases
+    elif args.tests == 'npi':
+        tests = testcase.npi_cases
+    else:
+        tests = testcase.all_cases
+
+    all_test_sents = {}
+    for test_name in tests:
+        test_sents = pickle.load(open(args.template_dir+"/"+test_name+".pickle", 'rb'))
+        all_test_sents[test_name] = test_sents
     writer.write_tests(all_test_sents, args.unit_type)
+
 name_lengths = writer.name_lengths
 key_lengths = writer.key_lengths
 

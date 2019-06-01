@@ -16,8 +16,12 @@ class MakeAgreementTemplate():
     def switch_number(self, wrds, verb=False):
         new_wrds = []
         for wrd in wrds:
-            if wrd.split()[0] == "is":
+            if wrd.split()[0] == "is": # Need to add one of these conditions for each irregular verb
                 new_wrds.append(' '.join(['are']+wrd.split()[1:]))
+            elif wrd.split()[0] == "was":
+                new_wrds.append(' '.join(['were']+wrd.split()[1:]))
+            elif wrd.split()[0] == "has":
+                new_wrds.append(' '.join(['have']+wrd.split()[1:]))
             elif verb:
                 if len(wrd.split()) > 1:
                     new_wrds.append(' '.join([wrd.split()[0][:-1]]+wrd.split()[1:]))

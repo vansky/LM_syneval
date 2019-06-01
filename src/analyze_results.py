@@ -71,6 +71,46 @@ if not args.anim:
 else:
     joined_results = results
 
+##Temporary Hack
+#for name in joined_results.keys():
+#    if 'npi' in name:
+#        for case in joined_results[name].keys():
+#            for i in range(0, len(joined_results[name][case]), 3):
+#                sent_a = joined_results[name][case][i]
+#                sent_b = joined_results[name][case][i+1]
+#                sent_c = joined_results[name][case][i+2]
+#                minlen = min(len(sent_a),len(sent_b),len(sent_c))
+#                if len(sent_a) == minlen + 1:
+#                    if sent_a[0][0] == '<unk>':
+#                        joined_results[name][case][i] = sent_a[1:]
+#                    elif sent_a[-1][0] == '<unk>':
+#                        joined_results[name][case][i] = sent_a[:-1]
+#                if len(sent_b) == minlen + 1:
+#                    if sent_b[0][0] == '<unk>':
+#                        joined_results[name][case][i+1] = sent_b[1:]
+#                    elif sent_b[-1][0] == '<unk>':
+#                        joined_results[name][case][i+1] = sent_b[:-1]
+#                if len(sent_c) == minlen + 1:
+#                    if sent_c[0][0] == '<unk>':
+#                        joined_results[name][case][i+2] = sent_c[1:]
+#                    elif sent_c[-1][0] == '<unk>':
+#                        joined_results[name][case][i+2] = sent_c[:-1]
+#    else:
+#        for case in joined_results[name].keys():
+#            for i in range(0, len(joined_results[name][case]), 2):
+#                sent_a = joined_results[name][case][i]
+#                sent_b = joined_results[name][case][i+1]
+#                minlen = min(len(sent_a),len(sent_b))
+#                if len(sent_a) == minlen + 1:
+#                    if sent_a[0][0] == '<unk>':
+#                        joined_results[name][case][i] = sent_a[1:]
+#                    elif sent_a[-1][0] == '<unk>':
+#                        joined_results[name][case][i] = sent_a[:-1]
+#                if len(sent_b) == minlen + 1:
+#                    if sent_b[0][0] == '<unk>':
+#                        joined_results[name][case][i+1] = sent_b[1:]
+#                    elif sent_b[-1][0] == '<unk>':
+#                        joined_results[name][case][i+1] = sent_b[:-1]
 
 def is_more_probable(sent_a, sent_b):
     if len(sent_a) != len(sent_b) and args.unit_type == 'word':
