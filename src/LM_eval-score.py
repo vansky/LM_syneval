@@ -58,7 +58,7 @@ def score_rnn():
             elif "===========================" in line:
                 break
             else:
-                wrd, sentid, wrd_score = [line.strip().split()[i] for i in scoring-indices]
+                wrd, sentid, wrd_score = [line.strip().split()[i] for i in scoring_indices]
                 score = -1 * float(wrd_score) # multiply by -1 to turn surps back into logprobs
                 sent.append((wrd, score))
                 if wrd == ".":
