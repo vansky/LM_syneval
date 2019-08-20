@@ -78,7 +78,7 @@ def test_LM():
     else:       
         logging.info("Testing RNN...")
         if args.cuda:
-            os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + '--cuda > '+ args.output_file)
+            os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + ' --cuda > '+ args.output_file)
         else:
             os.system(args.test_script+' '+ args.template_dir + ' ' +  args.model + ' ' + args.lm_data + ' ' + args.sentence_file + ' > '+ args.output_file)
         results = score_rnn()
